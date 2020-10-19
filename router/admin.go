@@ -2,12 +2,12 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"lhc.go.crawler/controller/admin/login"
 )
 
 func InitAdminRouter(r *gin.Engine)  {
 
-	r.GET("/admin/login", func(c *gin.Context) {
-		c.HTML(http.StatusOK,"login/login.html",gin.H{})
-	})
+	r.GET("/admin/login", login.Index)
+
+	r.POST("admin/login",login.Login)
 }

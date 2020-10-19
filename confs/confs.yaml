@@ -1,0 +1,9 @@
+#版本
+version: 1.0
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  username: root
+  password: root
+  dbname: picture_crawler
