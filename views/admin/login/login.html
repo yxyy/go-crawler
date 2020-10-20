@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YXYY-ADMIN</title>
+    <title>一夕烟云</title>
     <meta name="keywords" content="">
     <meta name="description" content="">
     <link href="/static/admin/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
@@ -26,7 +26,7 @@
         <h3>欢迎使用 YXYY 图片后台</h3>
         <form class="m-t" id="gb_form" action="/admin/login">
             <div class="form-group">
-                <input type="text" class="form-control" name="username" value="" required="required">
+                <input type="text" class="form-control" name="account" value="" required="required">
             </div>
             <div class="form-group">
                 <input type="password" class="form-control" name="password" value="" required="required">
@@ -54,7 +54,7 @@
                 layer.msg('网络错误', {icon: 1});
             },
             success: function (data) {
-                if (data.status == 1) {
+                if (data.code == 200) {
                     window.location.replace(data.url);
                 } else {
                     $('#err_msg').show().html("<span style='color:red'>" + data.msg + "</span>");

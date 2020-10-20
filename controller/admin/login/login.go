@@ -16,11 +16,19 @@ func Login(c *gin.Context)  {
 		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"服务器繁忙，请稍候重试！"})
 		return
 	}
-	if params.UserName=="" {
+	if params.Account=="" {
 		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"账号错误"})
 		return
 	}
 	if params.PassWord=="" {
+		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"密码错误"})
+		return
+	}
+	if !params.MatchAccount() {
+		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"账号错误"})
+		return
+	}
+	if !params.MatchPassWord() {
 		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"密码错误"})
 		return
 	}
