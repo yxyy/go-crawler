@@ -7,3 +7,5 @@ mysql:
   username: root
   password: root
   dbname: picture_crawler
+
+session_secret: yxyy_go_picture_v1.0
