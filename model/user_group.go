@@ -51,3 +51,9 @@ func (ug *UserGroup) UpdateData () error {
 	}
 	return nil
 }
+
+
+func GetUserGourpList() (data []*UserGroup) {
+	mysql.MysqlConnet.Table("yxyy_user_group").Find(&data)
+	return
+}
