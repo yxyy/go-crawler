@@ -6,7 +6,7 @@ import (
 )
 
 //生成随机盐
-func GetRandSlat() string {
+func GetRandSalt() string {
 
 	var salt string
 

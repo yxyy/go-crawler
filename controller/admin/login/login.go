@@ -1,9 +1,12 @@
 package login
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"lhc.go.crawler/model"
+	"log"
 	"net/http"
+	"time"
 )
 
 func Index(c *gin.Context)  {
@@ -20,7 +23,7 @@ func Login(c *gin.Context)  {
 		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"账号错误"})
 		return
 	}
-	if params.PassWord=="" {
+	if params.RePassword=="" {
 		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"密码错误"})
 		return
 	}
@@ -28,8 +31,33 @@ func Login(c *gin.Context)  {
 		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"账号错误"})
 		return
 	}
+
 	if !params.MatchPassWord() {
 		c.JSON(http.StatusOK,gin.H{"code":500,"msg":"密码错误"})
 		return
 	}
+
+	params.LoginNum++
+	params.LastLoginTime=time.Now().Unix()
+	params.LastLoginIp=c.ClientIP()
+	if err := params.Update();err!=nil{
+		log.Println(err)
+	}
+
+	session := sessions.Default(c)
+	session.Set("user_id",params.Id)
+	session.Set("account",params.Account)
+	session.Set("nickname",params.Nickname)
+	session.Set("group_id",params.GroupId)
+	session.Set("expiration",params.Expiration)
+	session.Save()
+
+	c.JSON(http.StatusOK,gin.H{"code":200,"msg":"登陆成功","url":"index"})
+}
+
+func Logout(c *gin.Context)  {
+	session := sessions.Default(c)
+	session.Clear()
+	session.Save()
+	c.Redirect(http.StatusFound,"login")
 }

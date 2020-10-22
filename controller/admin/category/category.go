@@ -1,4 +1,4 @@
-package user
+package category
 
 import (
 	"fmt"
@@ -8,11 +8,11 @@ import (
 )
 
 func Index(c *gin.Context)  {
-	c.HTML(http.StatusOK,"user/index.html",gin.H{})
+	c.HTML(http.StatusOK,"category/index.html",gin.H{})
 }
 
 func Add(c *gin.Context)  {
-	c.HTML(http.StatusOK,"user/add.html",gin.H{"group_list":model.GetUserGourpList()})
+	c.HTML(http.StatusOK,"category/add.html",gin.H{"group_list":model.GetUserGourpList()})
 }
 
 func GetList(c *gin.Context)  {
