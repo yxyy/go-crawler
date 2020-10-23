@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"lhc.go.crawler/controller/admin"
 	"lhc.go.crawler/controller/admin/category"
+	"lhc.go.crawler/controller/admin/crawler"
 	"lhc.go.crawler/controller/admin/login"
 	"lhc.go.crawler/controller/admin/user"
 	"lhc.go.crawler/controller/admin/user_group"
@@ -47,6 +48,17 @@ func InitAdminRouter(r *gin.Engine)  {
 		AdminGroup.POST("user_group/add",user_group.UpdateData)
 
 		AdminGroup.GET("category/index",category.Index)
+		AdminGroup.POST("category/index",category.GetList)
+		AdminGroup.POST("category/update",category.GetOneCategory)
+		AdminGroup.POST("category/updateData",category.UpdateData)
+
+		AdminGroup.GET("netbian/index", crawler.Index)
+		AdminGroup.POST("netbian/index", crawler.GetList)
+		AdminGroup.POST("netbian/update", crawler.GetOneCategory)
+		AdminGroup.POST("netbian/updateData", crawler.UpdateData)
+		AdminGroup.POST("netbian/status", crawler.Update)
+		AdminGroup.POST("netbian/crawler", crawler.Crawler)
+
 	}
 
 
