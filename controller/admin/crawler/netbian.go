@@ -1,30 +1,23 @@
-package category
+package crawler
 
 import (
-	"fmt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"lhc.go.crawler/controller/corn/netbian"
 	"lhc.go.crawler/model"
 	"net/http"
 )
 
 func Index(c *gin.Context)  {
-	category := model.GetParentCategory(0)
-	c.HTML(http.StatusOK,"category/index.html",gin.H{"category":category})
-}
-
-func Add(c *gin.Context)  {
-	c.HTML(http.StatusOK,"category/add.html",gin.H{"group_list":model.GetUserGourpList()})
+	c.HTML(http.StatusOK,"netbian/index.html",gin.H{"crawler_status":viper.Get("crawler_status")})
 }
 
 func GetList(c *gin.Context)  {
-	var params = model.NewCategory()
+	var params = model.NewCrawlerMenu()
 	if err:=c.ShouldBind(&params);err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
 	}
-	fmt.Printf("%#v\n",params)
-
 	data, total, err := params.GetList()
 	if err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
@@ -34,12 +27,12 @@ func GetList(c *gin.Context)  {
 }
 
 func GetOneCategory(c *gin.Context)  {
-	var params = model.NewCategory()
+	var params = model.NewCrawlerMenu()
 	if err:=c.ShouldBind(&params);err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
 	}
-	if err := params.GetOneCategory();err!=nil {
+	if err := params.GetOneCrawlerMenu();err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
 	}
@@ -47,13 +40,11 @@ func GetOneCategory(c *gin.Context)  {
 }
 
 func UpdateData(c *gin.Context){
-	var params model.Category
+	var params = model.NewCrawlerMenu()
 	if err:=c.ShouldBind(&params);err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
 	}
-	session := sessions.Default(c)
-	params.Author= session.Get("account").(string)
 	if err:=params.UpdateData();err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
@@ -62,7 +53,7 @@ func UpdateData(c *gin.Context){
 }
 
 func Update(c *gin.Context){
-	var params model.User
+	var params = model.NewCrawlerMenu()
 	if err:=c.ShouldBind(&params);err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
@@ -73,3 +64,9 @@ func Update(c *gin.Context){
 	}
 	c.JSON(http.StatusOK,gin.H{"code":200,"msg":"操作成功","url":"index"})
 }
+
+func Crawler(c *gin.Context)  {
+	c.JSON(http.StatusOK,gin.H{"code":200,"msg":"爬虫已启动"})
+	netbian.Run()
+}
+

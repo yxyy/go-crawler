@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"lhc.go.crawler/model"
 	"net/http"
@@ -32,6 +33,8 @@ func UpdateData(c *gin.Context)  {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":"url不能为空"})
 		return
 	}
+	session := sessions.Default(c)
+	params.Author= session.Get("account").(string)
 	if err:=params.UpdateData();err!=nil{
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
