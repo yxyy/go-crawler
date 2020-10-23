@@ -9,3 +9,7 @@ mysql:
   dbname: picture_crawler
 
 session_secret: yxyy_go_picture_v1.0
+
+crawler_status:
+  1 :  启动
+  2 :  关闭
