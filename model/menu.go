@@ -16,7 +16,7 @@ type Menu struct {
 	Icon        string `json:"icon"  form:"icon"`
 	Weight      int    `json:"weight"  form:"weight"`
 	Status      int    `json:"status"  form:"status"`
-	Author      string `json:"author"  `
+	Author      string `json:"author"`
 	CreateTime int64  `json:"create_time"  `
 	UpdateTime int64  `json:"update_time"  `
 }
