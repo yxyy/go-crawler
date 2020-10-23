@@ -1,4 +1,4 @@
-{{ define "category/index.html" }}
+{{ define "netbian/index.html" }}
     <!DOCTYPE html>
     <html>
     <head>
@@ -13,18 +13,8 @@
                 <div class="panel-body">
                     <div class="form-inline" id="role-form">
                         <div class="form-group">
-                            <label>大分类</label>
-                            <select class="form-control" name="pid" id="pid">
-                                <option value="">-</option>
-                                <option value="0">一级分类</option>
-                                {{range .category}}
-                                    <option value="{{.Id}}">{{.Title}}</option>
-                                {{end}}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>类型名称</label>
-                            <input type="text" name="title" id="title" placeholder="类型名称" class="form-control">
+                            <label>名称</label>
+                            <input type="text" name="name" id="name" placeholder="名称" class="form-control">
                         </div>
                         <div class="form-group">
                             <button id="search" class="btn btn-info"><strong>搜索</strong></button>
@@ -42,11 +32,11 @@
                             <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>类型名称</th>
-                                <th>标签</th>
-                                <th>描述</th>
-                                <th>父级id</th>
-                                <th>排序</th>
+                                <th>名称</th>
+                                <th>网站首页url</th>
+                                <th>后台爬虫url</th>
+                                <th>状态</th>
+                                <th>爬取时间</th>
                                 <th>创建时间</th>
                                 <th>操作</th>
                             </tr>
@@ -62,35 +52,34 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">增加类型</h4>
+                        <h4 class="modal-title">增加爬虫</h4>
                     </div>
                     <div class="modal-body">
                         <form id="up_form">
                             <input type="hidden" name="id" id="id" placeholder="id" class="form-control" value="">
                             <div class="form-group">
-                                <label>类型名称</label>
-                                <input type="text" name="title" id="title" placeholder="类型名称" class="form-control">
+                                <label>名称</label>
+                                <input type="text" name="name" id="name" placeholder="类型名称" class="form-control">
                             </div>
                             <div class="form-group">
-                                <label>大分类</label>
-                                <select class="form-control" name="pid" id="updataPid">
-                                    <option value="0">一级分类</option>
-                                    {{range .category}}
-                                        <option value="{{.Id}}">{{.Title}}</option>
+                                <label>网站首页url</label>
+                                <input type="text" name="crawler_url" id="crawler_url" placeholder="标签" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>后台爬虫url</label>
+                                <input type="text" name="cron_url" id="cron_url" placeholder="描述" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>状态</label>
+                                <select class="form-control" name="status" id="updatastatus">
+                                    {{range $k,$v :=.crawler_status}}
+                                        <option value="{{$k}}">{{$v}}</option>
                                     {{end}}
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>标签</label>
-                                <input type="text" name="mark" id="mark" placeholder="标签" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label>描述</label>
-                                <input type="text" name="description" id="description" placeholder="描述" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label>排序</label>
-                                <input type="text" name="sort" id="sort" placeholder="排序" class="form-control">
+                                <label>爬取时间</label>
+                                <input type="text" name="cron_time" id="cron_time" placeholder="标签" class="form-control">
                             </div>
                         </form>
                     </div>
@@ -123,14 +112,25 @@
             },
             "columns":[
                 {data: "id"},
-                {data: "title"},
-                {data: "mark"},
-                {data: "description"},
-                {data: "pid"},
-                {data: "sort"},
+                {data: "name"},
+                {data: "crawler_url"},
+                {data: "cron_url"},
+                {data: "status"},
+                {data: "cron_time"},
                 {data: "create_time"},
             ],
             "columnDefs": [
+                {
+                    targets: [4],
+                    render:function (data, type, row, meta) {
+                        if (row['status']==1) {
+                            status = '<span style="color: #008000">启动</span>'
+                        }else {
+                            status = '<span style="color: #EE0000">关闭</span>'
+                        }
+                        return status
+                    }
+                },
                 {
                     targets: [6],
                     render:function (data, type, row, meta) {
@@ -140,8 +140,15 @@
                 {
                     targets : [7],
                     render: function(data, type, row, meta) {
-                        return '<button onclick="showPass('+ row["id"]+')" data-toggle="modal" data-target="#addModal" class="btn btn-success btn-sm" >编辑</button> ' +
-                            '<button onclick="del('+ row["id"] +')" class="btn btn-danger btn-sm" >删除</button> '
+                        let status =""
+                        if (row['status']==1) {
+                            status = '<button onclick="changeStatus('+ row["id"]+',2)"  class="btn btn-danger btn-sm" >关闭</button> '
+                        }else {
+                            status = '<button onclick="changeStatus('+ row["id"]+',1)"  class="btn btn-success btn-sm" >启动</button> '
+                        }
+                        return status+'<button onclick="showPass('+ row["id"]+')" data-toggle="modal" data-target="#addModal" class="btn btn-success btn-sm" >编辑</button> ' +
+                            '<button onclick="del('+ row["id"] +')" class="btn btn-danger btn-sm" >删除</button> '+
+                            '<button onclick="crawler('+ row["id"] +')" class="btn btn-success btn-sm" >手动爬虫</button> '
                     }
                 }
             ],
@@ -156,8 +163,6 @@
         });
 
         function showPass(id) {
-            console.log(id)
-
             $.ajax({
                 type: "POST",
                 url: "update",
@@ -169,18 +174,16 @@
                 success: function (data) {
                     if (data.code == 200) {
                         $("#up_form #id").val(data.data.id)
-                        $("#up_form #title").val(data.data.title)
-                        $("#up_form #mark").val(data.data.mark)
-                        $("#up_form #description").val(data.data.description)
-                        $("#up_form #sort").val(data.data.sort)
+                        $("#up_form #name").val(data.data.name)
+                        $("#up_form #cron_time").val(data.data.cron_time)
+                        $("#up_form #crawler_url").val(data.data.crawler_url)
+                        $("#up_form #cron_url").val(data.data.cron_url)
                         $("#up_form #updataPid").find("option[value="+data.data.pid+"]").attr("selected", true)
                     } else {
                         layer.msg(data.msg, {icon: 2});
                     }
                 }
             });
-            // console.log($("#up_form #id").html())
-
         }
 
         //删除用户组
@@ -224,6 +227,44 @@
                 }
             });
         })
+
+        function changeStatus(id,status) {
+            $.ajax({
+                type: "POST",
+                url: "status",
+                data: {id:id,status:status},
+                async: false,
+                error: function (request) {
+                    layer.msg('网络错误', {icon: 1});
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        layer.msg(data.msg, {time: 2000, icon: 1});
+                        window.location.replace(data.url);
+                    } else {
+                        layer.msg(data.msg, {icon: 2});
+                    }
+                }
+            });
+        }
+        function crawler(id) {
+            $.ajax({
+                type: "POST",
+                url: "crawler",
+                data: {id:id},
+                async: false,
+                error: function (request) {
+                    layer.msg('网络错误', {icon: 1});
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        layer.msg(data.msg, {time: 2000, icon: 1});
+                    } else {
+                        layer.msg(data.msg, {icon: 2});
+                    }
+                }
+            });
+        }
     </script>
     </body>
     </html>
