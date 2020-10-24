@@ -13,6 +13,8 @@ var Fatal = logrus.New()
 var Error = logrus.New()
 //http日志
 var Http = logrus.New()
+//http日志
+var Corn = logrus.New()
 
 func InitLogs() error {
 	//设置输出json格式
@@ -37,6 +39,12 @@ func InitLogs() error {
 		return err
 	}
 	Fatal.SetOutput(Fatalfile)
+
+	Cornfile, err := LogFile("corn.log")
+	if err != nil {
+		return err
+	}
+	Corn.SetOutput(Cornfile)
 
 	return nil
 }

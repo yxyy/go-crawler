@@ -39,7 +39,7 @@ func GetOneCategory(c *gin.Context)  {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
 	}
-	if err := params.GetOneCategory();err!=nil {
+	if err := params.GetOneCategoryById();err!=nil {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
 	}

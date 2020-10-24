@@ -66,7 +66,18 @@ func Update(c *gin.Context){
 }
 
 func Crawler(c *gin.Context)  {
+	var params = model.NewCrawlerMenu()
+	if err:=c.ShouldBind(&params);err!=nil {
+		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
+		return
+	}
+	if err := params.GetOneCrawlerMenu();err!=nil {
+		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK,gin.H{"code":200,"msg":"爬虫已启动"})
+
+	netbian:=netbian.NewNetbian()
 	netbian.Run()
 }
 

@@ -44,13 +44,41 @@ func (this *Category) GetList()(data []*Category,total int,err error)  {
 }
 
 func (this *Category) GetOneCategory() error {
-	if this.Id ==0 {
-		return errors.New("id 不能为空")
-	}
 	if err:= mysql.MysqlConnet.Model(&this).First(&this).Error;err!=nil{
 			return err
 	}
 	return nil
+}
+
+func (this *Category) GetOneCategoryByMark() error {
+	if this.Mark =="" {
+		return errors.New("mark 不能为空")
+	}
+	if err:= mysql.MysqlConnet.Model(&this).First(&this).Error;err!=nil{
+		return err
+	}
+	return nil
+}
+
+func (this *Category) GetOneCategoryById() error {
+	if this.Id ==0 {
+		return errors.New("Id 不能为空")
+	}
+	if err:= mysql.MysqlConnet.Model(&this).First(&this).Error;err!=nil{
+		return err
+	}
+	return nil
+}
+
+func (this *Category) GetChilendCategoryById() ([]*Category,error) {
+	if this.Id ==0 {
+		return nil,errors.New("Id 不能为空")
+	}
+	var category []*Category
+	if err:= mysql.MysqlConnet.Model(&this).Where("pid = ?",this.Id).First(&category).Error;err!=nil{
+		return nil,err
+	}
+	return category,nil
 }
 
 
