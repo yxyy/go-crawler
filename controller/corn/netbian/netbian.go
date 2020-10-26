@@ -1,112 +1,141 @@
 package netbian
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/olivere/elastic/v7"
+	"github.com/spf13/viper"
+	"lhc.go.crawler/controller/common"
+	"lhc.go.crawler/libs/es"
 	"lhc.go.crawler/logs"
+	"lhc.go.crawler/model"
 	"net/http"
-	"github.com/axgle/mahonia"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
 )
 
+var count int
+
 type Netbian struct {
+	Mark string
 	Url string
-
+	Domain string
+	Origin string
+	Category []*model.Category
 }
 
-func ConvertToString(src string, srcCode string, tagCode string) string {
-	srcCoder := mahonia.NewDecoder(srcCode)
-	srcResult := srcCoder.ConvertString(src)
-	tagCoder := mahonia.NewDecoder(tagCode)
-	_, cdata, _ := tagCoder.Translate([]byte(srcResult), true)
-	result := string(cdata)
-	return result
-}
-
-func (this Netbian) Run()  {
-	url := "http://pic.netbian.com/4kdongman/"
-	resp, err := http.Get(url)
-	if err!=nil {
-		logs.Error.Info(err)
+func NewNetbian() *Netbian {
+	return &Netbian{
+		Origin:viper.GetString("web.netbian.name"),
+		Domain:viper.GetString("web.netbian.domain"),
 	}
-	defer resp.Body.Close()
-	fmt.Println(resp.StatusCode)
-	if resp.StatusCode != 200 {
-		fmt.Println("爬取完成")
+}
+
+func (this *Netbian) Run()  {
+	
+	category := model.NewCategory()
+	category.Mark=viper.GetString("web.netbian.mark")
+	if err := category.GetOneCategoryByMark();err!=nil{
+		logs.Corn.WithField("web","netbian").Info(err)
 		return
 	}
-	//bytes, err := ioutil.ReadAll(resp.Body)
-	//if err!=nil {
-	//	logs.Error.Info(err)
-	//}
-	//
-	//fmt.Println(string(bytes))
+	categorys, err := category.GetChilendCategoryById()
+	if err!=nil{
+		logs.Corn.WithField("web","netbian").Info(err)
+		return
+	}
+	if len(categorys) <=0 {
+		logs.Corn.WithField("web","netbian").Info("无可爬虫数据")
+		return
+	}
+	fmt.Println(categorys)
+
+	for _,v := range categorys {
+		var i = 1	//页数
+		this.Mark=v.Title
+		for  {
+			fmt.Println("正在爬"+this.Mark+"取第"+strconv.Itoa(i)+"页......")
+			if i==1 {
+				this.Url = v.Mark
+			}else {
+				this.Url =v.Mark + "/index_"+strconv.Itoa(i)+ ".html"
+			}
+			if err := this.PageCralwer();err!=nil{
+				break
+			}
+			time.Sleep(1*time.Second)
+			i++
+		}
+	}
+
+}
+
+func (this *Netbian) PageCralwer() error {
+	if this.Url==""{
+		fmt.Println("url 不能为空")
+		return errors.New("url 不能为空")
+	}
+	resp, err := http.Get(this.Url)
+	if err!=nil {
+		fmt.Println(err)
+		logs.Error.Info(err)
+		return err
+	}
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != 200 {
+		fmt.Println(this.Mark+"爬取完成")
+		return errors.New(this.Mark+"爬取完成")
+	}
 
 	document, err := goquery.NewDocumentFromReader(resp.Body)
 	if err!=nil {
 		fmt.Println(err)
+		return err
 	}
-	//text := document.Find(".col4-t2>.item-img-cont").Text()
-	//fmt.Println(text)
+	//批量操作es
+	bulk := es.Client.Bulk()
+
 	document.Find(".slist>ul>li").Each(func(i int, selection *goquery.Selection) {
+		var data model.NetbianImg
+		name :=selection.Find("a>b").Text()
 		img_alt, _ := selection.Find("a>img").Attr("alt")
-		img_url, _ := selection.Find("a>img").Attr("src")
-		fmt.Println(gbktoutf8(img_alt),img_url)
+		data.Name = common.Gbktoutf8(name)
+		data.Alt = common.Gbktoutf8(img_alt)
+		data.Src, _ = selection.Find("a>img").Attr("src")
+		data.Details, _ = selection.Find("a").Attr("href")
+		count++
+		data.Sort = count
+		data.Mark=this.Mark
+		data.Origin=this.Origin
+		data.TickTime=time.Now().Local().Format("2006-01-02 15:04:05")
+
+		starIndex := strings.LastIndex(data.Details,"/")
+		lastIndex := strings.LastIndex(data.Details,".")
+		id := data.Details[starIndex+1:lastIndex]
+		parseSrc, _ := url.Parse(data.Src)
+		if !parseSrc.IsAbs() {
+			tmpUrl := strings.TrimLeft(data.Src, "/")
+			data.Src = this.Domain+tmpUrl
+		}
+		parseDetails, _ := url.Parse(data.Details)
+		if !parseDetails.IsAbs() {
+			tmpUrl := strings.TrimLeft(data.Details, "/")
+			data.Details = this.Domain+tmpUrl
+		}
+
+		request := elastic.NewBulkIndexRequest()
+		request.Index("gallery").Id(id).Doc(data)
+		bulk = bulk.Add(request)
+
 	})
 
+	_, err = bulk.Do(context.Background())
 
+	return err
 }
-
-func gbktoutf8(text string) string {
-	return mahonia.NewDecoder("gbk").ConvertString(text)
-}
-
-func NewNetbian() *Netbian {
-	return &Netbian{}
-}
-//func (this *Netbian) Run()  {
-//	fmt.Println("开始爬虫")
-//
-//	category := model.NewCategory()
-//
-//	category.Mark=viper.GetString("web.netbian")
-//	if err := category.GetOneCategoryByMark();err!=nil{
-//		logs.Corn.WithField("web","netbian").Info(err)
-//	}
-//	categories, err := category.GetChilendCategoryById()
-//	if err!=nil{
-//		logs.Corn.WithField("web","netbian").Info(err)
-//	}
-//
-//	for _,v := range categories {
-//		if v.Mark=="" {
-//			continue
-//		}
-//
-//		var i = 1	//页数
-//		for  {
-//			if i==1 {
-//				this.Url = v.Mark
-//			}else {
-//				this.Url =v.Mark + "/index_"+strconv.Itoa(i)+ ".html"
-//			}
-//			resp, err := http.Get(this.Url)
-//			if err!=nil {
-//				logs.Error.Info(err)
-//			}
-//			defer resp.Body.Close()
-//			if resp.StatusCode != 200 {
-//				break
-//			}
-//			document, err := goquery.NewDocumentFromReader(resp.Body)
-//			if err!=nil {
-//				logs.Error.Info(err)
-//			}
-//
-//			i++
-//		}
-//
-//	}
-//
-//
-//}
 

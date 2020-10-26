@@ -9,6 +9,7 @@ import (
 type CrawlerMenu struct {
 	Id int `json:"id" form:"id"`
 	Name string `json:"name" form:"name"`
+	Mark string `json:"mark" form:"mark"`
 	CrawlerUrl string `json:"crawler_url" form:"crawler_url"`
 	CronUrl string `json:"cron_url" form:"cron_url"`
 	Status int `json:"status" form:"status"`

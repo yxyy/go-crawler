@@ -75,7 +75,7 @@ func (this *Category) GetChilendCategoryById() ([]*Category,error) {
 		return nil,errors.New("Id 不能为空")
 	}
 	var category []*Category
-	if err:= mysql.MysqlConnet.Model(&this).Where("pid = ?",this.Id).First(&category).Error;err!=nil{
+	if err:= mysql.MysqlConnet.Model(&this).Where("pid = ?",this.Id).Find(&category).Error;err!=nil{
 		return nil,err
 	}
 	return category,nil

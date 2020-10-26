@@ -75,9 +75,10 @@ func Crawler(c *gin.Context)  {
 		c.JSON(http.StatusOK,gin.H{"code":400,"msg":err.Error()})
 		return
 	}
+	go func() {
+		netbian:=netbian.NewNetbian()
+		netbian.Run()
+	}()
 	c.JSON(http.StatusOK,gin.H{"code":200,"msg":"爬虫已启动"})
-
-	netbian:=netbian.NewNetbian()
-	netbian.Run()
 }
 

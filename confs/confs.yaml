@@ -8,6 +8,10 @@ mysql:
   password: root
   dbname: picture_crawler
 
+es:
+  host : http://127.0.0.1
+  port :  9200
+
 session_secret: yxyy_go_picture_v1.0
 
 crawler_status:
@@ -15,4 +19,7 @@ crawler_status:
   2 :  关闭
 
 web :
-  netbian: netbian
+  netbian:
+    name :  彼岸图网
+    mark :  netbian
+    domain : http://pic.netbian.com/

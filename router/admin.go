@@ -8,6 +8,7 @@ import (
 	"lhc.go.crawler/controller/admin"
 	"lhc.go.crawler/controller/admin/category"
 	"lhc.go.crawler/controller/admin/crawler"
+	"lhc.go.crawler/controller/admin/gallery"
 	"lhc.go.crawler/controller/admin/login"
 	"lhc.go.crawler/controller/admin/user"
 	"lhc.go.crawler/controller/admin/user_group"
@@ -58,6 +59,10 @@ func InitAdminRouter(r *gin.Engine)  {
 		AdminGroup.POST("netbian/updateData", crawler.UpdateData)
 		AdminGroup.POST("netbian/status", crawler.Update)
 		AdminGroup.POST("netbian/crawler", crawler.Crawler)
+
+
+		AdminGroup.GET("gallery/index", gallery.Index)
+		AdminGroup.POST("gallery/index", gallery.GetList)
 
 	}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lhc.go.crawler/confs"
 	"lhc.go.crawler/libs/mysql"
+	"lhc.go.crawler/libs/es"
 	"lhc.go.crawler/router"
 	"lhc.go.crawler/logs"
 )
@@ -27,6 +28,12 @@ func main()  {
 		logs.Fatal.Fatal(err)
 	}
 	defer mysql.MysqlConnet.Close()
+
+	//加载mysql连接
+	fmt.Println("加载es连接组件.....")
+	if err := es.InitEs();err != nil {
+		logs.Fatal.Fatal(err)
+	}
 
 	//加载路由
 	fmt.Println("加载路由组件.....")
