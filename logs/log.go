@@ -26,6 +26,7 @@ func InitLogs() error {
 	if err != nil {
 		return err
 	}
+	Error.SetFormatter(&logrus.JSONFormatter{})
 	Error.SetOutput(Errorfile)
 
 	Httpfile, err := LogFile("http.log")
@@ -69,6 +70,7 @@ func LogFile (name string) (*os.File,error) {
 
 }
 
+
 //判断文件是否存在
 func FileExist(name string) bool {
 	_, err := os.Stat(name)
@@ -79,3 +81,5 @@ func FileExist(name string) bool {
 	}
 	return true
 }
+
+
