@@ -63,6 +63,7 @@ func InitAdminRouter(r *gin.Engine)  {
 
 		AdminGroup.GET("gallery/index", gallery.Index)
 		AdminGroup.POST("gallery/index", gallery.GetList)
+		AdminGroup.POST("gallery/update", gallery.Update)
 
 	}
 
