@@ -11,6 +11,7 @@ type Category struct {
 	Pid int `json:"pid" form:"pid"`
 	Title string `json:"title" form:"title"`
 	Mark string `json:"mark" form:"mark"`
+	Url string `json:"url" form:"url"`
 	Description string `json:"description" form:"description"`
 	Sort string `json:"sort" form:"sort"`
 	//Level string `json:"id" form:"level"`

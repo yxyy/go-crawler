@@ -12,14 +12,12 @@
             <div class="col-md-12">
                 <div class="panel-body">
                     <div class="form-inline" id="role-form">
-                        <div class="form-group">
-                            <label>类型名称</label>
-                            <input type="text" name="title" id="title" placeholder="类型名称" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <button id="search" class="btn btn-info"><strong>搜索</strong></button>
-                            <button class="btn btn-primary " data-toggle="modal" data-target="#addModal"><strong>新增</strong></button>
-                        </div>
+                        <div class="input-group">
+                            <input type="text" name="alt" id="alt" class="form-control" placeholder="Search for...">
+                            <span class="input-group-btn">
+                                    <button class="btn btn-default" id="search" type="button">Go</button>
+                                  </span>
+                        </div><!-- /input-group -->
                     </div>
                 </div>
             </div>
@@ -47,6 +45,15 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <img src="/static/download/netbian/4kfengjing/190337-1574852617005c.jpg" class="img-container">
+            </div>
+        </div>
+    </div>
+
     <!-- 全局js -->
     {{template "footer" }}
     <script src="/static/admin/js/plugins/dataTables/jquery.dataTables.js"></script>
@@ -61,8 +68,7 @@
                 "url": "index",
                 "type": 'POST',
                 "data": function (param) {
-                    param.pid = $('#pid').val();
-                    param.title = $('#title').val();
+                    param.alt = $('#alt').val();
                 }
             },
             "columns":[
@@ -78,7 +84,10 @@
                 {
                     targets : [5],
                     render: function(data, type, row, meta) {
-                        return '<img src="'+row["src"]+'">'
+
+                        return "<a onclick='show(\""+row["downloads_url"]+"\")'>"+'<img src="'+row["downloads_url"]+'" data-toggle="modal" data-target=".bs-example-modal-lg">'+
+                            "</a>"
+                        // return "<img src='"+row["downloads_url"]+"' data-toggle='modal' data-target='.bs-example-modal-lg' onclick='show('"+row["id"]+"')'>"
                     }
                 },
                 {
@@ -117,6 +126,10 @@
                 }
             });
             return false;
+        }
+
+        function show(src) {
+            $(".bs-example-modal-lg img").attr("src",src)
         }
     </script>
     </body>

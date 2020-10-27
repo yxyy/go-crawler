@@ -25,6 +25,7 @@ type Netbian struct {
 	Url string
 	Domain string
 	Origin string
+	Type string
 	Category []*model.Category
 }
 
@@ -36,7 +37,7 @@ func NewNetbian() *Netbian {
 }
 
 func (this *Netbian) Run()  {
-	
+	fmt.Println("爬虫已启动.....")
 	category := model.NewCategory()
 	category.Mark=viper.GetString("web.netbian.mark")
 	if err := category.GetOneCategoryByMark();err!=nil{
@@ -49,7 +50,7 @@ func (this *Netbian) Run()  {
 		return
 	}
 	if len(categorys) <=0 {
-		logs.Corn.WithField("web","netbian").Info("无可爬虫数据")
+		logs.Corn.WithField("web","netbian").Info("无可爬数据")
 		return
 	}
 	fmt.Println(categorys)
@@ -57,14 +58,16 @@ func (this *Netbian) Run()  {
 	for _,v := range categorys {
 		var i = 1	//页数
 		this.Mark=v.Title
+		this.Type = v.Mark
 		for  {
 			fmt.Println("正在爬"+this.Mark+"取第"+strconv.Itoa(i)+"页......")
 			if i==1 {
-				this.Url = v.Mark
+				this.Url = v.Url
 			}else {
-				this.Url =v.Mark + "/index_"+strconv.Itoa(i)+ ".html"
+				this.Url =v.Url + "/index_"+strconv.Itoa(i)+ ".html"
 			}
 			if err := this.PageCralwer();err!=nil{
+				fmt.Println(err)
 				break
 			}
 			time.Sleep(1*time.Second)
@@ -76,25 +79,21 @@ func (this *Netbian) Run()  {
 
 func (this *Netbian) PageCralwer() error {
 	if this.Url==""{
-		fmt.Println("url 不能为空")
 		return errors.New("url 不能为空")
 	}
 	resp, err := http.Get(this.Url)
 	if err!=nil {
-		fmt.Println(err)
 		logs.Error.Info(err)
 		return err
 	}
 	defer resp.Body.Close()
 	
 	if resp.StatusCode != 200 {
-		fmt.Println(this.Mark+"爬取完成")
 		return errors.New(this.Mark+"爬取完成")
 	}
 
 	document, err := goquery.NewDocumentFromReader(resp.Body)
 	if err!=nil {
-		fmt.Println(err)
 		return err
 	}
 	//批量操作es
@@ -111,12 +110,13 @@ func (this *Netbian) PageCralwer() error {
 		count++
 		data.Sort = count
 		data.Mark=this.Mark
+		data.Type=this.Type
 		data.Origin=this.Origin
 		data.TickTime=time.Now().Local().Format("2006-01-02 15:04:05")
 
 		starIndex := strings.LastIndex(data.Details,"/")
 		lastIndex := strings.LastIndex(data.Details,".")
-		id := data.Details[starIndex+1:lastIndex]
+		id := "netbian_"+data.Details[starIndex+1:lastIndex]
 		parseSrc, _ := url.Parse(data.Src)
 		if !parseSrc.IsAbs() {
 			tmpUrl := strings.TrimLeft(data.Src, "/")
@@ -128,6 +128,11 @@ func (this *Netbian) PageCralwer() error {
 			data.Details = this.Domain+tmpUrl
 		}
 
+		//保存目录
+		dir := "netbian/" + data.Type
+		//下载图片
+		data.DownloadsUrl = common.Downloads(data.Src, dir)
+
 		request := elastic.NewBulkIndexRequest()
 		request.Index("gallery").Id(id).Doc(data)
 		bulk = bulk.Add(request)
@@ -135,6 +140,8 @@ func (this *Netbian) PageCralwer() error {
 	})
 
 	_, err = bulk.Do(context.Background())
+
+	time.Sleep(100*time.Microsecond)
 
 	return err
 }
